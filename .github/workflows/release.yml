@@ -21,8 +21,9 @@ jobs:
         env:
           CIBW_BUILD: cp311-*
           #   CIBW_ARCHS_MACOSg: "x86_64 arm64"
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_24
           CIBW_BEFORE_ALL_LINUX: |
-            yum install -y cmake hdf5-devel eigen3-devel
+            apt install -y libhdf5-dev libeigen3-dev cmake
             bash build-moab
           CIBW_BEFORE_ALL_MACOS: |
             brew install llvm eigen hdf5
