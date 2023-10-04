@@ -2,11 +2,15 @@
 
 import glob
 import os
+import platform
+import shutil
 import sys
 from packaging import version
 import numpy as np  # needed for numpy include paths
 import Cython
+import subprocess
 from setuptools import setup, Extension, find_packages
+from pathlib import Path
 from Cython.Distutils import build_ext
 
 # make sure cython isn't too old
@@ -19,8 +23,9 @@ if version.parse(Cython.__version__) < version.parse("0.26"):
 moab_root = "moab"
 moab_source_include = moab_root + "/src/moab/"
 moab_other_source_include = moab_root + "/src/"
-moab_binary_include = "moab-build/src/"
-moab_lib_path = "moab-build/lib/"
+moab_build_dir = "build/temp.macosx-13.4-arm64-cpython-311"
+moab_binary_include = moab_build_dir + "/src/"
+moab_lib_path = moab_build_dir + "/lib/"
 pymoab_src_dir = "moab/pymoab/pymoab"
 include_paths = [
     moab_source_include,
@@ -56,10 +61,49 @@ for f in os.listdir(pymoab_src_dir):
         )
         ext_modules.append(ext)
 
+
+class MOABBuildExtension(build_ext):
+    def run(self):
+        try:
+            subprocess.run(["cmake", "--version"], check=True)
+        except subprocess.CalledProcessError:
+            raise RuntimeError("CMake must be installed")
+
+        build_dir = Path(self.build_temp)
+        build_dir.mkdir(exist_ok=True)
+
+        cmd = [
+            "cmake",
+            "-S",
+            "moab",
+            "-B",
+            build_dir,
+            "-DENABLE_HDF5=ON",
+            "-DENABLE_NETCDF=OFF",
+            "-DBUILD_SHARED_LIBS=ON",
+            "-DENABLE_FORTRAN=OFF",
+            "-DENABLE_BLASLAPACK=OFF",
+            "-DENABLE_PYMOAB=OFF",
+        ]
+
+        subprocess.run(cmd, check=True)
+
+        subprocess.run(
+            [
+                "cmake",
+                "--build",
+                build_dir,
+                "--" "-m" if platform.system() == "Windows" else "-j2",
+            ]
+        )
+        super().run()
+
+
 # setup pymoab
 setup(
     name="pymoab",
-    cmdclass={"build_ext": build_ext},
+    cmdclass={"build_ext": MOABBuildExtension},
+    # cmdclass={"build_ext": build_ext},
     ext_modules=ext_modules,
     package_dir={"": "moab/pymoab"},
     packages=["pymoab"],
