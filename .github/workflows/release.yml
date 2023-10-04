@@ -21,7 +21,7 @@ jobs:
         env:
           CIBW_BUILD: cp311-*
           CIBW_BEFORE_ALL_LINUX: |
-            yum install -y cmake hdf5-devel
+            yum install -y cmake hdf5-devel eigen3-devel
             bash build-moab
           CIBW_BEFORE_ALL_MACOS: |
             brew install llvm eigen hdf5
