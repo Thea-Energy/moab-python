@@ -8,4 +8,5 @@ cmake -S moab -B moab-build \
     -DENABLE_BLASLAPACK=OFF \
     -DENABLE_PYMOAB=OFF
 
-cmake --build moab-build -j 8
+# cmake --build moab-build -j 8
+cmake --build moab-build

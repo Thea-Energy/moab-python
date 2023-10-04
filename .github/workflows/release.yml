@@ -20,9 +20,17 @@ jobs:
         uses: pypa/cibuildwheel@v2.16.2
         env:
           CIBW_BUILD: cp311-*
-          CIBW_BEFORE_ALL_LINUX: yum install cmake hdf5-devel
-          CIBW_BEFORE_ALL_MACOS: brew install llvm eigen hdf5
+          CIBW_BEFORE_ALL_LINUX: |
+            yum install cmake hdf5-devel
+            bash build-moab
+          CIBW_BEFORE_ALL_MACOS: |
+            brew install llvm eigen hdf5
+            bash build-moab
           CIBW_ENVIRONMENT_MACOS: CC=/usr/local/opt/llvm/bin/clang CXX=/usr/local/opt/llvm/bin/clang++
+          CIBW_BEFORE_BUILD: |
+            pip install setuptools wheel numpy cython
+        with:
+          package-dir: moab-build/pymoab
 
       - uses: actions/upload-artifact@v3
         with:
