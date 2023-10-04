@@ -20,18 +20,12 @@ jobs:
         uses: pypa/cibuildwheel@v2.16.2
         env:
           CIBW_BUILD: cp311-*
-          #   CIBW_ARCHS_MACOSg: "x86_64 arm64"
+          CIBW_ARCHS_MACOSg: "x86_64 arm64"
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
           CIBW_BEFORE_ALL_LINUX: |
-            dnf install epel-release
-            dnf config-manager --enable epel
-            dnf install yum-utils
-            dnf config-manager --set-enabled powertools
-            dnf install cmake eigen3-devel
+            dnf install -y cmake eigen3-devel gcc gcc-c++ make
 
-            # Set the HDF5 version you want to install
             HDF5_VERSION="1.14.2"
-            dnf install -y gcc gcc-c++ make
             wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-${HDF5_VERSION}/src/hdf5-${HDF5_VERSION}.tar.gz
             tar -xzvf hdf5-${HDF5_VERSION}.tar.gz
             cd hdf5-${HDF5_VERSION}
@@ -41,16 +35,17 @@ jobs:
 
             bash build-moab
           CIBW_BEFORE_ALL_MACOS: |
-            brew install eigen hdf5
-            # PACKAGES=(llvm eigen hdf5)
-            # for PACKAGE in "${PACKAGES[@]}"
-            # do
-            #     result=$(brew --cache --bottle-tag=arm64_monterey $PACKAGE)
-            #     echo "Looking for arm64 version of $result"
-            #     brew install $result
-            # done
+            if [ "$arch" == "arm64" ]; then
+                PACKAGES=(eigen hdf5)
+                for PACKAGE in "${PACKAGES[@]}"
+                do
+                    brew fetch --force --bottle-tag=arm64_big_sur $PACKAGE
+                    brew install $(brew --cache --bottle-tag=arm64_big_sur $PACKAGE)
+                done
+            else
+                brew install eigen hdf5
+            fi
             bash build-moab
-        #   CIBW_ENVIRONMENT_MACOS: CC=/usr/local/opt/llvm/bin/clang CXX=/usr/local/opt/llvm/bin/clang++
 
       - uses: actions/upload-artifact@v3
         with:
