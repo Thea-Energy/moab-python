@@ -1,23 +1,13 @@
 #!/usr/bin/env python
 
-import glob
 import os
 import platform
-import shutil
-import sys
-from packaging import version
 import numpy as np  # needed for numpy include paths
-import Cython
+import re
 import subprocess
-from setuptools import setup, Extension, find_packages
+from setuptools import setup, Extension
 from pathlib import Path
 from Cython.Distutils import build_ext
-
-# make sure cython isn't too old
-if version.parse(Cython.__version__) < version.parse("0.26"):
-    sys.exit(
-        "Cython version is old. Upgrade to Cython 0.29 using pip install cython==0.29.36 [--user]"
-    )
 
 # setup moab include paths
 moab_root = "moab"
@@ -99,11 +89,18 @@ class MOABBuildExtension(build_ext):
         super().run()
 
 
+with open(Path(__file__).parent / "moab" / "CMakeLists.txt") as f:
+    content = f.read()
+    match = re.search(r'SET\(PACKAGE_VERSION "(\d+\.\d+\.\d+)"\)', content)
+    if match:
+        version = match.group(1)
+    else:
+        raise ValueError("Unable to find PACKAGE_VERSION in CMakeLists.txt")
+
 # setup pymoab
 setup(
     name="pymoab",
     cmdclass={"build_ext": MOABBuildExtension},
-    # cmdclass={"build_ext": build_ext},
     ext_modules=ext_modules,
     package_dir={"": "moab/pymoab"},
     packages=["pymoab"],
@@ -112,7 +109,7 @@ setup(
             "*.pxd",
         ]
     },
-    version="5.5.0",
+    version=version,
     author="Patrick Shriwise, Guilherme Caminha, Vijay Mahadevan, Iulian Grindeanu, Anthony Scopatz",
     author_email="moab-dev@mcs.anl.gov",
 )
