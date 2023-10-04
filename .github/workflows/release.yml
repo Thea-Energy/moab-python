@@ -26,28 +26,9 @@ jobs:
           CIBW_BEFORE_ALL_LINUX: |
             set -eu
             dnf install -y cmake eigen3-devel gcc gcc-c++ make wget
-
-            HDF5_VERSION="1_14_2"
-            wget -q https://github.com/HDFGroup/hdf5/releases/download/hdf5-${HDF5_VERSION}/hdf5-${HDF5_VERSION}.tar.gz
-            tar -xzvf hdf5-${HDF5_VERSION}.tar.gz
-            cd hdfsrc
-            ./configure
-            make -j$(nproc)
-            make install
-
             bash build-moab
+
           CIBW_BEFORE_ALL_MACOS: |
-            $arch=$(uname -m)
-            if [ "$arch" == "arm64" ]; then
-                PACKAGES=(eigen hdf5)
-                for PACKAGE in "${PACKAGES[@]}"
-                do
-                    brew fetch --force --bottle-tag=arm64_big_sur $PACKAGE
-                    brew install $(brew --cache --bottle-tag=arm64_big_sur $PACKAGE)
-                done
-            else
-                brew install eigen hdf5
-            fi
             bash build-moab
 
       - uses: actions/upload-artifact@v3
