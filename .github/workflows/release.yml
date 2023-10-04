@@ -27,10 +27,6 @@ jobs:
             brew install llvm eigen hdf5
             bash build-moab
           CIBW_ENVIRONMENT_MACOS: CC=/usr/local/opt/llvm/bin/clang CXX=/usr/local/opt/llvm/bin/clang++
-          CIBW_BEFORE_BUILD: |
-            pip install setuptools wheel numpy cython
-        with:
-          package-dir: moab-build/pymoab
 
       - uses: actions/upload-artifact@v3
         with:
