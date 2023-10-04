@@ -23,11 +23,25 @@ jobs:
           #   CIBW_ARCHS_MACOSg: "x86_64 arm64"
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
           CIBW_BEFORE_ALL_LINUX: |
-            apt update
-            apt install -y libhdf5-dev libeigen3-dev cmake
+            dnf install epel-release
+            dnf config-manager --enable epel
+            dnf install yum-utils
+            dnf config-manager --set-enabled powertools
+            dnf install cmake eigen3-devel
+
+            # Set the HDF5 version you want to install
+            HDF5_VERSION="1.14.2"
+            dnf install -y gcc gcc-c++ make
+            wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-${HDF5_VERSION}/src/hdf5-${HDF5_VERSION}.tar.gz
+            tar -xzvf hdf5-${HDF5_VERSION}.tar.gz
+            cd hdf5-${HDF5_VERSION}
+            ./configure
+            make -j$(nproc)
+            make install
+
             bash build-moab
           CIBW_BEFORE_ALL_MACOS: |
-            brew install llvm eigen hdf5
+            brew install eigen hdf5
             # PACKAGES=(llvm eigen hdf5)
             # for PACKAGE in "${PACKAGES[@]}"
             # do
