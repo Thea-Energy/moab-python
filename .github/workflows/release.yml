@@ -44,16 +44,28 @@ jobs:
           CIBW_ENVIRONMENT_MACOS: MACOS_DEPLOYMENT_TARGET=10.9 CMAKE_OSX_ARCHITECTURES=${{ matrix.cibw-arch == 'macosx_x86_64' && 'x86_64' || matrix.cibw-arch == 'macosx_arm64' && 'arm64' || '' }}
           CIBW_BEFORE_ALL_MACOS: |
             set -eu
+
             if [ "$CMAKE_OSX_ARCHITECTURES" == "arm64" ]; then
-                echo "COMPILING FOR ARM64"
-                PACKAGES=(eigen hdf5)
-                for PACKAGE in "${PACKAGES[@]}"
-                do
-                    brew fetch --force --bottle-tag=arm64_big_sur $PACKAGE
-                    brew install $(brew --cache --bottle-tag=arm64_big_sur $PACKAGE)
-                done
+              brew list
+              # echo "COMPILING FOR ARM64"
+              # mkdir -p ~/arm-target/bin
+              # mkdir -p ~/arm-target/brew-cache
+              # export PATH="$HOME/arm-target/bin:$PATH"
+
+              # cd ~/arm-target
+              # mkdir arm-homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C arm-homebrew
+              # ln -s ~/arm-target/arm-homebrew/bin/brew ~/arm-target/bin/arm-brew
+
+              # export HOMEBREW_CACHE=~/arm-target/brew-cache
+              # export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+              PACKAGES=(libaec eigen hdf5)
+              for PACKAGE in "${PACKAGES[@]}"
+              do
+                  brew fetch --force --bottle-tag=arm64_big_sur $PACKAGE
+                  brew install $(brew --cache --bottle-tag=arm64_big_sur $PACKAGE)
+              done
             else
-                brew install eigen hdf5
+              brew install eigen hdf5
             fi
             # bash build-eigen
             # bash build-hdf5
