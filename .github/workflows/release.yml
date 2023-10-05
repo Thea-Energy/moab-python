@@ -38,9 +38,19 @@ jobs:
             set -eu
             ARCH=$(echo $ARCHFLAGS | cut -d ' ' -f 2)
             echo "ARCH: $ARCH"
+            if [ "$ARCH" == "arm64" ]; then
+                PACKAGES=(eigen hdf5)
+                for PACKAGE in "${PACKAGES[@]}"
+                do
+                    brew fetch --force --bottle-tag=arm64_big_sur $PACKAGE
+                    brew install $(brew --cache --bottle-tag=arm64_big_sur $PACKAGE)
+                done
+            else
+                brew install eigen hdf5
+            fi
             export CMAKE_OSX_ARCHITECTURES=$ARCH
-            bash build-eigen
-            bash build-hdf5
+            # bash build-eigen
+            # bash build-hdf5
             bash build-moab
 
       - uses: actions/upload-artifact@v3
