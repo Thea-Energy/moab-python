@@ -5,7 +5,7 @@ on: [push, workflow_dispatch]
 jobs:
   build_wheels:
     strategy:
-      fail-fast: false # for testing
+      fail-fast: true
       matrix:
         include:
           - runs-on: ubuntu-20.04
@@ -14,8 +14,6 @@ jobs:
             cibw-arch: macosx_x86_64
           - runs-on: macos-latest
             cibw-arch: macosx_arm64
-          - runs-on: windows-latest
-            cibw-arch: win_amd64
 
     name: Build wheels on ${{ matrix.cibw-arch }}
     runs-on: ${{ matrix.runs-on }}
@@ -44,7 +42,6 @@ jobs:
           CIBW_ENVIRONMENT_MACOS: MACOS_DEPLOYMENT_TARGET=10.9 CMAKE_OSX_ARCHITECTURES=${{ matrix.cibw-arch == 'macosx_x86_64' && 'x86_64' || matrix.cibw-arch == 'macosx_arm64' && 'arm64' || '' }}
           CIBW_BEFORE_ALL_MACOS: |
             set -eu
-
             if [ "$CMAKE_OSX_ARCHITECTURES" == "arm64" ]; then
               PACKAGES=(libaec eigen hdf5)
               for PACKAGE in "${PACKAGES[@]}"
@@ -55,12 +52,6 @@ jobs:
             else
               brew install eigen hdf5
             fi
-            bash build-moab
-          CIBW_BEFORE_ALL_WINDOWS: |
-            choco install eigen
-            pip install requests
-            Invoke-WebRequest -Uri https://raw.githubusercontent.com/h5py/h5py/3.9.0/ci/get_hdf5_win.py -OutFile build-hdf5.py
-            python build-hdf5.py
             bash build-moab
 
       - uses: actions/upload-artifact@v3
