@@ -4,28 +4,39 @@ on: [push, workflow_dispatch]
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false # for testing
       matrix:
-        os: [ubuntu-20.04, macos-11]
+        include:
+          - runs-on: ubuntu-20.04
+            cibw-arch: manylinux_x86_64
+          - runs-on: macos-latest
+            cibw-arch: macosx_x86_64
+          - runs-on: macos-latest
+            cibw-arch: macosx_arm64
+          - runs-on: windows-latest
+            cibw-arch: win_amd64
+          - runs-on: windows-latest
+            cibw-arch: win32
+            python-arch: x86
+
+    name: Build wheels on ${{ matrix.cibw-arch }}
+    runs-on: ${{ matrix.runs-on }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           submodules: "recursive"
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.2
         env:
-          CIBW_BUILD: cp311-*
-          CIBW_SKIP: "*-musllinux*"
-          #   CIBW_ARCHS_MACOSg: "x86_64 arm64"
-          CIBW_ARCHS_MACOS: arm64
+          CIBW_BUILD: "cp311-${{ matrix.cibw-arch }}"
+          CIBW_ARCHS_MACOS: x86_64 arm64
           CIBW_ARCHS_LINUX: x86_64
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
-          CIBW_ENVIRONMENT_LINUX: LD_LIBRARY_PATH="/usr/local/lib64:${LD_LIBRARY_PATH}"
+          CIBW_ENVIRONMENT_LINUX: LD_LIBRARY_PATH="/usr/local/lib64:${LD_LIBRARY_PATH}" PIP_ONLY_BINARY="numpy"
           CIBW_BEFORE_ALL_LINUX: |
             dnf install -y epel-release
             dnf config-manager --enable epel
@@ -33,12 +44,11 @@ jobs:
             bash build-moab
             echo "LD_LIBRARY_PATH: ${LD_LIBRARY_PATH}"
 
-          CIBW_BEFORE_BUILD_MACOS:
-            | # Must happen before each build as builds have different architectures
+          CIBW_ENVIRONMENT_MACOS: MACOS_DEPLOYMENT_TARGET=10.9 CMAKE_OSX_ARCHITECTURES=${{ matrix.cibw-arch == 'macosx_x86_64' && 'x86_64' || matrix.cibw-arch == 'macosx_arm64' && 'arm64' || '' }}
+          CIBW_BEFORE_ALL_MACOS: |
             set -eu
-            ARCH=$(echo $ARCHFLAGS | cut -d ' ' -f 2)
-            echo "ARCH: $ARCH"
-            if [ "$ARCH" == "arm64" ]; then
+            if [ "$CMAKE_OSX_ARCHITECTURES" == "arm64" ]; then
+                echo "COMPILING FOR ARM64"
                 PACKAGES=(eigen hdf5)
                 for PACKAGE in "${PACKAGES[@]}"
                 do
@@ -48,7 +58,6 @@ jobs:
             else
                 brew install eigen hdf5
             fi
-            export CMAKE_OSX_ARCHITECTURES=$ARCH
             # bash build-eigen
             # bash build-hdf5
             bash build-moab
