@@ -24,10 +24,14 @@ jobs:
           CIBW_ARCHS_MACOS: "arm64"
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
           CIBW_BEFORE_ALL_LINUX: |
-            dnf install -y cmake eigen3-devel gcc gcc-c++ make wget
+            dnf install -y epel-release
+            dnf config-manager --enable epel
+            dnf install -y sudo cmake eigen3-devel gcc gcc-c++ wget hdf5-devel
             bash build-moab
 
           CIBW_BEFORE_ALL_MACOS: |
+            bash build-eigen
+            bash build-hdf5
             bash build-moab
 
       - uses: actions/upload-artifact@v3

@@ -1,23 +1,6 @@
 #!/bin/bash
 set -eu
 
-EIGEN_VERSION="3.4.0"
-wget -q https://gitlab.com/libeigen/eigen/-/archive/$EIGEN_VERSION/eigen-$EIGEN_VERSION.tar.gz
-tar -xzf eigen-$EIGEN_VERSION.tar.gz
-pushd eigen-$EIGEN_VERSION
-cmake -S . -B build -DEIGEN_BUILD_TESTS=OFF
-sudo cmake --build build -j 2 -t install
-popd
-
-
-HDF5_VERSION="1_14_2"
-wget -q https://github.com/HDFGroup/hdf5/releases/download/hdf5-${HDF5_VERSION}/hdf5-${HDF5_VERSION}.tar.gz
-tar -xzf hdf5-${HDF5_VERSION}.tar.gz
-pushd hdfsrc
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DHDF5_BUILD_TOOLS=OFF -DCMAKE_INSTALL_PREFIX=/usr/local
-sudo cmake --build build -j 2 -t install
-popd
-
 cmake -S moab -B moab-build \
     -DENABLE_HDF5=ON \
     -DENABLE_NETCDF=OFF \

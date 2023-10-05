@@ -1,0 +1,10 @@
+#!/bin/bash
+set -eu
+
+EIGEN_VERSION="3.4.0"
+wget -q https://gitlab.com/libeigen/eigen/-/archive/$EIGEN_VERSION/eigen-$EIGEN_VERSION.tar.gz
+tar -xzf eigen-$EIGEN_VERSION.tar.gz
+pushd eigen-$EIGEN_VERSION
+cmake -S . -B build -DEIGEN_BUILD_TESTS=OFF
+sudo cmake --build build -j 2 -t install
+popd

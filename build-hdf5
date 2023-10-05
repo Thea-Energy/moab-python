@@ -1,0 +1,11 @@
+#!/bin/bash
+set -eu
+
+HDF5_VERSION="1_14_2"
+wget -q https://github.com/HDFGroup/hdf5/releases/download/hdf5-${HDF5_VERSION}/hdf5-${HDF5_VERSION}.tar.gz
+tar -xzf hdf5-${HDF5_VERSION}.tar.gz
+pushd hdfsrc
+# -DZLIB_USE_EXTERNAL:BOOL=OFF and -DSZIP_USE_EXTERNAL:BOOL=OFF.
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DHDF5_BUILD_TOOLS=OFF  -DCMAKE_INSTALL_PREFIX=/usr/local
+sudo cmake --build build -j 2 -t install
+popd
