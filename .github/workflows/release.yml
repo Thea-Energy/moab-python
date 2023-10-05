@@ -14,8 +14,8 @@ jobs:
             cibw-arch: macosx_x86_64
           - runs-on: macos-latest
             cibw-arch: macosx_arm64
-          # - runs-on: windows-latest
-          #   cibw-arch: win_amd64
+          - runs-on: windows-latest
+            cibw-arch: win_amd64
 
     name: Build wheels on ${{ matrix.cibw-arch }}
     runs-on: ${{ matrix.runs-on }}
@@ -62,7 +62,6 @@ jobs:
             Invoke-WebRequest -Uri https://raw.githubusercontent.com/h5py/h5py/3.9.0/ci/get_hdf5_win.py -OutFile build-hdf5.py
             python build-hdf5.py
             bash build-moab
-
 
       - uses: actions/upload-artifact@v3
         with:
