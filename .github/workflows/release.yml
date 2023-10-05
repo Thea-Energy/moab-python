@@ -27,7 +27,7 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.2
         env:
-          CIBW_BUILD: "*-${{ matrix.cibw-arch }}"
+          CIBW_BUILD: "cp*-${{ matrix.cibw-arch }}"
           CIBW_ARCHS_MACOS: x86_64 arm64
           CIBW_ARCHS_LINUX: x86_64
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
@@ -39,7 +39,7 @@ jobs:
             bash build-moab
             echo "LD_LIBRARY_PATH: ${LD_LIBRARY_PATH}"
 
-          CIBW_ENVIRONMENT_MACOS: MACOS_DEPLOYMENT_TARGET=10.9 CMAKE_OSX_ARCHITECTURES=${{ matrix.cibw-arch == 'macosx_x86_64' && 'x86_64' || matrix.cibw-arch == 'macosx_arm64' && 'arm64' || '' }}
+          CIBW_ENVIRONMENT_MACOS: MACOS_DEPLOYMENT_TARGET=10.9 CMAKE_OSX_ARCHITECTURES=${{ matrix.cibw-arch == 'macosx_x86_64' && 'x86_64' || matrix.cibw-arch == 'macosx_arm64' && 'arm64' || '' }} PIP_ONLY_BINARY="numpy"
           CIBW_BEFORE_ALL_MACOS: |
             set -eu
             if [ "$CMAKE_OSX_ARCHITECTURES" == "arm64" ]; then
