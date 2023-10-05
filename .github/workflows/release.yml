@@ -1,6 +1,6 @@
 name: Release
 
-on: [workflow_dispatch]
+on: [push, workflow_dispatch]
 
 jobs:
   build_wheels:
@@ -24,7 +24,6 @@ jobs:
           CIBW_ARCHS_MACOS: "arm64"
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
           CIBW_BEFORE_ALL_LINUX: |
-            set -eu
             dnf install -y cmake eigen3-devel gcc gcc-c++ make wget
             bash build-moab
 
