@@ -33,9 +33,11 @@ jobs:
 
           CIBW_BEFORE_BUILD_MACOS:
             | # Must happen before each build as builds have different architectures
-            echo "ARCHFLAGS: $ARCHFLAGS"
-            bash build-eigen
-            bash build-hdf5
+            $ARCH=$(echo $ARCHFLAGS | cut -d ' ' -f 2)
+            # echo "ARCH: $ARCH"
+            # CMAKE_OSX_ARCHITECTURES
+            source build-eigen
+            source build-hdf5
             bash build-moab
 
       - uses: actions/upload-artifact@v3
