@@ -23,14 +23,16 @@ jobs:
           #   CIBW_ARCHS_MACOSg: "x86_64 arm64"
           CIBW_ARCHS_MACOS: arm64
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
-          CIBW_REPAIR_WHEEL_COMMAND_LINUX: auditwheel repair -w {dest_dir} -L /usr/local/lib64 {wheel} # doesn't seem to find it otherwise
+          CIBW_REPAIR_WHEEL_COMMAND_LINUX: auditwheel repair -w {dest_dir} -L/usr/local/lib64 {wheel} # doesn't seem to find it otherwise
+          CIBW_ENVIRONMENT_LINUX: LD_LIBRARY_PATH="/usr/local/lib64:${LD_LIBRARY_PATH}"
           CIBW_BEFORE_ALL_LINUX: |
             dnf install -y epel-release
             dnf config-manager --enable epel
             dnf install -y sudo cmake eigen3-devel gcc gcc-c++ wget hdf5-devel
             bash build-moab
 
-          CIBW_BEFORE_ALL_MACOS: |
+          CIBW_BEFORE_BUILD_MACOS:
+            | # Must happen before each build as builds have different architectures
             echo "ARCHFLAGS: $ARCHFLAGS"
             bash build-eigen
             bash build-hdf5
