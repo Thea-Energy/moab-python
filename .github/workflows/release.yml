@@ -46,18 +46,6 @@ jobs:
             set -eu
 
             if [ "$CMAKE_OSX_ARCHITECTURES" == "arm64" ]; then
-              brew list
-              # echo "COMPILING FOR ARM64"
-              # mkdir -p ~/arm-target/bin
-              # mkdir -p ~/arm-target/brew-cache
-              # export PATH="$HOME/arm-target/bin:$PATH"
-
-              # cd ~/arm-target
-              # mkdir arm-homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C arm-homebrew
-              # ln -s ~/arm-target/arm-homebrew/bin/brew ~/arm-target/bin/arm-brew
-
-              # export HOMEBREW_CACHE=~/arm-target/brew-cache
-              # export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
               PACKAGES=(libaec eigen hdf5)
               for PACKAGE in "${PACKAGES[@]}"
               do
@@ -67,9 +55,14 @@ jobs:
             else
               brew install eigen hdf5
             fi
-            # bash build-eigen
-            # bash build-hdf5
             bash build-moab
+          CIBW_BEFORE_ALL_WINDOWS: |
+            choco install eigen
+            pip install requests
+            Invoke-WebRequest -Uri https://raw.githubusercontent.com/h5py/h5py/3.9.0/ci/get_hdf5_win.py -OutFile build-hdf5.py
+            python build-hdf5.py
+            bash build-moab
+
 
       - uses: actions/upload-artifact@v3
         with:
